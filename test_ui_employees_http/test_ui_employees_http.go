@@ -85,7 +85,7 @@ func submitForm(w http.ResponseWriter, r *http.Request) {
 
     if exists {
         log.Println("Data already exists")
-        fmt.Fprintln(w, "Error: have data already")
+        fmt.Fprintln(w, "exists")
         return
     }
 
@@ -101,7 +101,7 @@ func submitForm(w http.ResponseWriter, r *http.Request) {
     }
 
     log.Println("Data inserted successfully")
-    fmt.Fprintf(w, "Employee added successfully")
+    fmt.Fprintln(w, "inserted")
 }
 
 func getEmployees(w http.ResponseWriter, r *http.Request) {

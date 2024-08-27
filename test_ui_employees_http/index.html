@@ -12,17 +12,20 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 180vh;
+            width: 100vw;
+            height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container {
             display: flex;
-            flex-direction: column; /* Changed to column to stack elements vertically */
+            flex-direction: row;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             width: 100%;
             max-width: 2000px;
-            gap: 25px;
+            gap: 20px;
         }
         .form-container {
             background-color: #fff;
@@ -32,16 +35,15 @@
             width: 500px;
             box-sizing: border-box;
         }
-
         .chart-container {
-            font-family: Arial, sans-serif;
             background-color: #fff;
-            padding: 20px;
-            border-radius: 35px;
+            padding: 40px;
+            border-radius: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 1300px;
-            height: 700px;
+            height: 90vh;
             box-sizing: border-box;
+            color: #000;
         }
         h1 {
             text-align: center;
@@ -54,6 +56,7 @@
             margin-bottom: 10px;
             font-weight: bold;
             font-size: 1.2em;
+            color: #000; /* Ensure label text is black */
         }
         input[type="text"], input[type="submit"], input[type="reset"] {
             width: 100%;
@@ -61,13 +64,14 @@
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 1.5em;
+            font-size: 1em;
         }
         input[type="submit"], input[type="reset"] {
             background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
+            font-size: 1.2em;
         }
         input[type="submit"]:hover, input[type="reset"]:hover {
             background-color: #45a049;
@@ -75,7 +79,6 @@
         canvas {
             width: 100% !important;
             height: 100% !important;
-            font-size: 1.5em;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -117,13 +120,30 @@
             const data = await fetchEmployeeData();
             createChart(data);
         });
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const response = await fetch('/submit', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.text();
+            if (result === 'exists') {
+                alert('Data already exists');
+            } else if (result === 'inserted') {
+                alert('Data inserted successfully');
+            } else {
+                alert('Unexpected response: ' + result);
+            }
+        }
     </script>
 </head>
 <body>
     <div class="container">
         <div class="form-container">
             <h1>Employee Salary Record</h1>
-            <form action="/submit" method="post">
+            <form onsubmit="handleSubmit(event)">
                 <label for="name">Name:</label>
                 <input type="text" id="name" name="name"><br><br>
                 <label for="age">Age:</label>
