@@ -64,6 +64,26 @@ func submitForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if the data already exists
+	var exists bool
+	checkQuery := `
+        SELECT EXISTS(
+            SELECT 1 FROM public.employees WHERE name=$1 AND age=$2 AND country=$3 AND position=$4 AND wage=$5
+        )`
+	err = db.QueryRow(checkQuery, name, age, country, position, wage).Scan(&exists)
+	if err != nil {
+		log.Printf("Error checking existing data: %v", err)
+		http.Error(w, "Unable to check existing data", http.StatusInternalServerError)
+		return
+	}
+
+	if exists {
+		log.Println("Data already exists")
+		fmt.Fprintln(w, "Error: have data already")
+		return
+	}
+
+	// Insert the new employee data
 	sqlStatement := `
         INSERT INTO public.employees (name, age, country, position, wage)
         VALUES ($1, $2, $3, $4, $5)`

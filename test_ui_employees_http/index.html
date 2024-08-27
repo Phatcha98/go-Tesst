@@ -4,22 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 2em;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        input[type="text"], input[type="submit"], input[type="reset"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        input[type="submit"], input[type="reset"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+        input[type="submit"]:hover, input[type="reset"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <script>
+        function handleSubmit(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            // Validate form data
+            for (const [key, value] of Object.entries(data)) {
+                if (!value.trim()) {
+                    alert(`Error: ${key} cannot be empty or contain only spaces`);
+                    return;
+                }
+            }
+
+            fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(data),
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result.includes("Employee added successfully")) {
+                    alert("Employee added successfully");
+                    window.location.href = "/"; // Redirect to home if successful
+                } else if (result.includes("have data อยู่แล้ว")) {
+                    alert("Error: have data อยู่แล้ว");
+                } else {
+                    alert(result); // Display other results in an alert box
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to add employee');
+            });
+        }
+    </script>
 </head>
 <body>
-    <h1>Employee Form</h1>
-    <form action="/submit" method="post">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name"><br><br>
-        <label for="age">Age:</label>
-        <input type="text" id="age" name="age"><br><br>
-        <label for="country">Country:</label>
-        <input type="text" id="country" name="country"><br><br>
-        <label for="position">Position:</label>
-        <input type="text" id="position" name="position"><br><br>
-        <label for="wage">Wage:</label>
-        <input type="text" id="wage" name="wage"><br><br>
-        <input type="submit" value="Submit">
-    </form>
-    <div id="message"></div>
+    <div class="form-container">
+        <h1>Employee Form</h1>
+        <form onsubmit="handleSubmit(event)">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name"><br><br>
+            <label for="age">Age:</label>
+            <input type="text" id="age" name="age"><br><br>
+            <label for="country">Country:</label>
+            <input type="text" id="country" name="country"><br><br>
+            <label for="position">Position:</label>
+            <input type="text" id="position" name="position"><br><br>
+            <label for="wage">Wage:</label>
+            <input type="text" id="wage" name="wage"><br><br>
+            <input type="submit" value="Submit">
+            <input type="reset" value="Reset">
+        </form>
+    </div>
 </body>
 </html>
