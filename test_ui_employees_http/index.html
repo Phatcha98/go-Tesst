@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Form</title>
+    <title>Phatcha</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -78,11 +78,11 @@
             .then(result => {
                 if (result.includes("Employee added successfully")) {
                     alert("Employee added successfully");
-                    window.location.href = "/"; // Redirect to home if successful
-                } else if (result.includes("have data อยู่แล้ว")) {
-                    alert("Error: have data อยู่แล้ว");
+                    window.location.href = "/";
+                } else if (result.includes("have data already")) {
+                    alert("Error: have data already");
                 } else {
-                    alert(result); // Display other results in an alert box
+                    alert(result); 
                 }
             })
             .catch(error => {
@@ -94,7 +94,7 @@
 </head>
 <body>
     <div class="form-container">
-        <h1>Employee Form</h1>
+        <h1>Employee Salary Record</h1>
         <form onsubmit="handleSubmit(event)">
             <label for="name">Name:</label>
             <input type="text" id="name" name="name"><br><br>

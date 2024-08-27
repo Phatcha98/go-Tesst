@@ -105,6 +105,6 @@ func main() {
 
 	http.HandleFunc("/submit", submitForm)
 
-	fmt.Println("Server is running on http://localhost:8080")
+	fmt.Println("Server is running on http://10.17.77.190:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
