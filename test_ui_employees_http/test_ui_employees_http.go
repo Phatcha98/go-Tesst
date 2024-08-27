@@ -1,29 +1,81 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
+	"strconv"
+
+	_ "github.com/lib/pq"
+)
+
+const (
+	host     = "localhost"
+	port     = 5432
+	user     = "postgres"
+	password = "postgres"
+	dbname   = "postgres"
 )
 
 func submitForm(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
 	name := r.FormValue("name")
-	age := r.FormValue("age")
+	ageStr := r.FormValue("age")
 	country := r.FormValue("country")
 	position := r.FormValue("position")
-	wage := r.FormValue("wage")
+	wageStr := r.FormValue("wage")
 
-	fmt.Printf("Name: %s\n", name)
-	fmt.Printf("Age: %s\n", age)
-	fmt.Printf("Country: %s\n", country)
-	fmt.Printf("Position: %s\n", position)
-	fmt.Printf("Wage: %s\n", wage)
+	log.Printf("Received form data: name=%s, age=%s, country=%s, position=%s, wage=%s", name, ageStr, country, position, wageStr)
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	age, err := strconv.Atoi(ageStr)
+	if err != nil {
+		log.Printf("Error converting age to int: %v", err)
+		http.Error(w, "Invalid age value", http.StatusBadRequest)
+		return
+	}
+
+	wage, err := strconv.Atoi(wageStr)
+	if err != nil {
+		log.Printf("Error converting wage to int: %v", err)
+		http.Error(w, "Invalid wage value", http.StatusBadRequest)
+		return
+	}
+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		log.Printf("Error connecting to database: %v", err)
+		http.Error(w, "Unable to connect to database", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		log.Printf("Error pinging database: %v", err)
+		http.Error(w, "Unable to reach database", http.StatusInternalServerError)
+		return
+	}
+
+	sqlStatement := `
+        INSERT INTO public.employees (name, age, country, position, wage)
+        VALUES ($1, $2, $3, $4, $5)`
+	_, err = db.Exec(sqlStatement, name, age, country, position, wage)
+	if err != nil {
+		log.Printf("Error executing query: %v", err)
+		http.Error(w, "Unable to execute query", http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("Data inserted successfully")
+	fmt.Fprintf(w, "Employee added successfully")
 }
 
 func main() {
@@ -34,5 +86,5 @@ func main() {
 	http.HandleFunc("/submit", submitForm)
 
 	fmt.Println("Server is running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
