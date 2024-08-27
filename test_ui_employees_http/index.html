@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phatcha</title>
+    <title>Phatcha Record</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,20 +12,42 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: 180vh;
             margin: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column; /* Changed to column to stack elements vertically */
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 2000px;
+            gap: 25px;
         }
         .form-container {
             background-color: #fff;
             padding: 40px;
-            border-radius: 8px;
+            border-radius: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 400px;
+            width: 500px;
+            box-sizing: border-box;
+        }
+
+        .chart-container {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 35px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 1300px;
+            height: 700px;
+            box-sizing: border-box;
         }
         h1 {
             text-align: center;
             color: #4CAF50;
             font-size: 2em;
+            margin-bottom: 20px;
         }
         label {
             display: block;
@@ -39,76 +61,86 @@
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 1em;
+            font-size: 1.5em;
         }
         input[type="submit"], input[type="reset"] {
             background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
-            font-size: 1.2em;
         }
         input[type="submit"]:hover, input[type="reset"]:hover {
             background-color: #45a049;
         }
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+            font-size: 1.5em;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        function handleSubmit(event) {
-            event.preventDefault(); // Prevent the default form submission
+        async function fetchEmployeeData() {
+            const response = await fetch('/api/employees');
+            const data = await response.json();
+            return data;
+        }
 
-            const formData = new FormData(event.target);
-            const data = Object.fromEntries(formData.entries());
+        function createChart(data) {
+            const ctx = document.getElementById('wageChart').getContext('2d');
+            const countries = data.map(employee => employee.country);
+            const wages = data.map(employee => employee.wage);
 
-            // Validate form data
-            for (const [key, value] of Object.entries(data)) {
-                if (!value.trim()) {
-                    alert(`Error: ${key} cannot be empty or contain only spaces`);
-                    return;
-                }
-            }
-
-            fetch('/submit', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: countries,
+                    datasets: [{
+                        label: 'Wages',
+                        data: wages,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
                 },
-                body: new URLSearchParams(data),
-            })
-            .then(response => response.text())
-            .then(result => {
-                if (result.includes("Employee added successfully")) {
-                    alert("Employee added successfully");
-                    window.location.href = "/";
-                } else if (result.includes("have data already")) {
-                    alert("Error: have data already");
-                } else {
-                    alert(result); 
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to add employee');
             });
         }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const data = await fetchEmployeeData();
+            createChart(data);
+        });
     </script>
 </head>
 <body>
-    <div class="form-container">
-        <h1>Employee Salary Record</h1>
-        <form onsubmit="handleSubmit(event)">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name"><br><br>
-            <label for="age">Age:</label>
-            <input type="text" id="age" name="age"><br><br>
-            <label for="country">Country:</label>
-            <input type="text" id="country" name="country"><br><br>
-            <label for="position">Position:</label>
-            <input type="text" id="position" name="position"><br><br>
-            <label for="wage">Wage:</label>
-            <input type="text" id="wage" name="wage"><br><br>
-            <input type="submit" value="Submit">
-            <input type="reset" value="Reset">
-        </form>
+    <div class="container">
+        <div class="form-container">
+            <h1>Employee Salary Record</h1>
+            <form action="/submit" method="post">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name"><br><br>
+                <label for="age">Age:</label>
+                <input type="text" id="age" name="age"><br><br>
+                <label for="country">Country:</label>
+                <input type="text" id="country" name="country"><br><br>
+                <label for="position">Position:</label>
+                <input type="text" id="position" name="position"><br><br>
+                <label for="wage">Wage:</label>
+                <input type="text" id="wage" name="wage"><br><br>
+                <input type="submit" value="Submit">
+                <input type="reset" value="Reset">
+            </form>
+        </div>
+        <div class="chart-container">
+            <canvas id="wageChart"></canvas>
+        </div>
     </div>
 </body>
 </html>
